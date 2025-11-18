@@ -31,9 +31,8 @@ export function Login() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-900 rounded-2xl mb-4">
-              <Truck className="w-8 h-8 text-yellow-400" />
-            </div>
+            <img src="/logo.png" alt="Jl Omar" className="inline-flex items-center justify-center w-16 h-16 border rounded-2xl mb-4">
+            </img>
             <h1 className="text-3xl font-bold text-gray-900">JL Omar (controle de produção)</h1>
             <p className="text-gray-600 mt-2">Sistema de Entre-Eixo</p>
           </div>

@@ -2,16 +2,62 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Sistema completo de gestão de serviços e medições de entre-eixo para caminhões" />
+
+    <!-- Informações básicas -->
+    <title>JL Omar – Controle de Produção e Entre-Eixo</title>
+    <meta
+      name="description"
+      content="Sistema completo de gestão de serviços, medições de entre-eixo e controle de produção para caminhões."
+    />
+
+    <!-- PWA / tema -->
     <meta name="theme-color" content="#2563eb" />
     <link rel="manifest" href="/manifest.json" />
-    <title>JL Omar (controle de produção) </title>
-    <meta property="og:image" content="https://bolt.new/static/og_default.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
-</head>
+
+    <!-- Ícones e favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <!-- opcional: ícone geral -->
+    <link rel="shortcut icon" href="/logo.png" type="image/png" />
+
+    <!-- Open Graph (preview em WhatsApp, Facebook, etc.) -->
+    <!-- Troque a URL abaixo pelo domínio real do sistema quando tiver -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content="JL Omar – Controle de Produção e Entre-Eixo" />
+    <meta
+      property="og:description"
+      content="Gerencie serviços, medições de entre-eixo e produção de caminhões em um só lugar, com controle simples e direto."
+    />
+    <meta property="og:site_name" content="JL Omar – Controle de Produção" />
+    <meta property="og:url" content="https://jl-omar.vercel.app/" />
+    <!-- Você pode usar /logo.png ou /android-chrome-512x512.png; idealmente uma imagem 1200x630 -->
+    <meta property="og:image" content="https://jl-omar.vercel.app/android-chrome-512x512.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="JL Omar – Controle de Produção e Entre-Eixo" />
+    <meta
+      name="twitter:description"
+      content="Sistema de gestão de serviços e medições de entre-eixo para caminhões."
+    />
+    <meta name="twitter:image" content="https://jl-omar.vercel.app/android-chrome-512x512.png" />
+
+    <!-- Sugestão de nome do app em mobile -->
+    <meta name="application-name" content="JL Omar" />
+    <meta name="apple-mobile-web-app-title" content="JL Omar" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <!-- Service Worker PWA -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -19,8 +65,7 @@
         });
       }
     </script>
-  <body>
-    <div id="root"></div>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

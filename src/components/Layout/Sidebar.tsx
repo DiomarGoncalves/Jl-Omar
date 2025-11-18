@@ -26,9 +26,9 @@ export function Sidebar({ onClose }: SidebarProps) {
     <>
       <div className="p-4 sm:p-6 border-b border-blue-800">
         <div className="flex items-center gap-2 sm:gap-3">
-          <img src="/logo.png" alt="TruckControl" className="w-8 h-8" />
+          <img src="/logo.png" alt="Jl Omar" className="w-8 h-8" />
           <div className="hidden sm:block">
-            <h1 className="text-lg sm:text-xl font-bold">TruckControl</h1>
+            <h1 className="text-lg sm:text-xl font-bold">Jl Omar</h1>
             <p className="text-xs text-blue-200">Sistema de Entre-Eixo</p>
           </div>
         </div>
