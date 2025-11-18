@@ -6,6 +6,7 @@ import { StatusBadge } from '../components/StatusBadge';
 import { truckService } from '../services/truckService';
 import { serviceService } from '../services/serviceService';
 import { Truck, Service } from '../types';
+import { MEASUREMENT_LABEL } from '../config/api';
 
 export function TruckDetail() {
   const { id } = useParams<{ id: string }>();
@@ -45,14 +46,22 @@ export function TruckDetail() {
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
+    try {
+      return new Date(date).toLocaleDateString('pt-BR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+    } catch {
+      return 'Data inválida';
+    }
   };
 
   if (loading) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
         </div>
       </MainLayout>
     );
@@ -76,7 +85,7 @@ export function TruckDetail() {
 
   return (
     <MainLayout>
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-8 py-6">
         <button
           onClick={() => navigate('/trucks')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
@@ -84,71 +93,72 @@ export function TruckDetail() {
           <ArrowLeft className="w-5 h-5" />
           <span>Voltar</span>
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
           {truck.brand} {truck.model}
         </h1>
         <p className="text-sm text-gray-600 mt-1">Ano {truck.year}</p>
       </div>
 
-      <div className="p-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="p-4 sm:p-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Total de Serviços</p>
-                <p className="text-3xl font-bold text-gray-900">{services.length}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Total de Serviços</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">{services.length}</p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <Wrench className="w-6 h-6 text-blue-600" />
+              <div className="bg-yellow-100 p-2 sm:p-3 rounded-lg flex-shrink-0">
+                <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-blue-900" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Valor Total</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalValue)}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Valor Total</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatCurrency(totalValue)}</p>
               </div>
-              <div className="bg-green-100 p-3 rounded-lg">
-                <DollarSign className="w-6 h-6 text-green-600" />
+              <div className="bg-green-100 p-2 sm:p-3 rounded-lg flex-shrink-0">
+                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Metragem Total</p>
-                <p className="text-3xl font-bold text-gray-900">{totalMeters}m</p>
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Metragem Total</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">{totalMeters}</p>
+                <p className="text-xs text-gray-500">{MEASUREMENT_LABEL}</p>
               </div>
-              <div className="bg-amber-100 p-3 rounded-lg">
-                <Ruler className="w-6 h-6 text-amber-600" />
+              <div className="bg-amber-100 p-2 sm:p-3 rounded-lg flex-shrink-0">
+                <Ruler className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Pendentes</p>
-                <p className="text-3xl font-bold text-gray-900">{pendingCount}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Pendentes</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">{pendingCount}</p>
               </div>
-              <div className="bg-yellow-100 p-3 rounded-lg">
-                <AlertCircle className="w-6 h-6 text-yellow-600" />
+              <div className="bg-red-100 p-2 sm:p-3 rounded-lg flex-shrink-0">
+                <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
+              <div className="p-4 sm:p-6 border-b border-gray-200">
                 <h2 className="text-lg font-bold text-gray-900">Serviços Realizados</h2>
               </div>
 
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {services.length > 0 ? (
                   <div className="space-y-4">
                     {services.map((service) => (
@@ -157,8 +167,8 @@ export function TruckDetail() {
                         className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                         onClick={() => navigate(`/services/${service.id}`)}
                       >
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
+                          <div className="flex-1">
                             <h3 className="font-semibold text-gray-900 mb-1">
                               {service.equipment}
                             </h3>
@@ -166,16 +176,14 @@ export function TruckDetail() {
                               <StatusBadge status={service.status} size="sm" />
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-lg font-bold text-green-600">
-                              {formatCurrency(service.value)}
-                            </p>
-                          </div>
+                          <p className="text-lg font-bold text-green-600">
+                            {formatCurrency(service.value)}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                           <span>OF: {service.of}</span>
                           <span>{formatDate(service.serviceDate)}</span>
-                          <span>Entre-eixo: {service.meter}m</span>
+                          <span>{service.meter} {MEASUREMENT_LABEL}</span>
                         </div>
                       </div>
                     ))}
@@ -187,8 +195,8 @@ export function TruckDetail() {
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">Informações do Caminhão</h2>
               <div className="space-y-3">
                 <div>
@@ -206,28 +214,28 @@ export function TruckDetail() {
                 {truck.observations && (
                   <div>
                     <p className="text-sm text-gray-600">Observações</p>
-                    <p className="font-medium text-gray-900">{truck.observations}</p>
+                    <p className="font-medium text-gray-900 break-words">{truck.observations}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">Ações Rápidas</h2>
               <div className="space-y-3">
                 <button
                   onClick={() => navigate('/services?truck=' + truck.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="w-full flex items-center justify-center gap-3 px-4 py-2 sm:py-3 bg-blue-900 text-white rounded-lg hover:bg-blue-950 transition-colors text-sm sm:text-base"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="font-medium">Novo Serviço</span>
                 </button>
                 <button
                   onClick={() => navigate('/measurements?truck=' + truck.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+                  className="w-full flex items-center justify-center gap-3 px-4 py-2 sm:py-3 bg-yellow-400 text-blue-900 rounded-lg hover:bg-yellow-500 transition-colors text-sm sm:text-base font-medium"
                 >
-                  <Ruler className="w-5 h-5" />
-                  <span className="font-medium">Ver Medições</span>
+                  <Ruler className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span>Ver Medições</span>
                 </button>
               </div>
             </div>

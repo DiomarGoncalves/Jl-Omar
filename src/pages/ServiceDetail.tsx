@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, FileText, Truck as TruckIcon, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, FileText, Truck as TruckIcon } from "lucide-react";
 import { MainLayout } from "../components/Layout/MainLayout";
 import { StatusBadge } from "../components/StatusBadge";
 import { Modal } from "../components/Modal";
@@ -15,7 +15,6 @@ export function ServiceDetail() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
-  const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -160,51 +159,24 @@ export function ServiceDetail() {
                         key={material.id}
                         className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
                       >
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-gray-900">{material.name}</h3>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingMaterial(material);
-                                setIsMaterialModalOpen(true);
-                              }}
-                              className="px-2 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                              title="Editar material"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                if (!window.confirm("Deseja excluir este material?")) return;
-                                try {
-                                  await serviceService.deleteMaterial(id!, material.id);
-                                  await loadData();
-                                } catch (err) {
-                                  console.error("Erro ao excluir material:", err);
-                                  alert("Erro ao excluir material");
-                                }
-                              }}
-                              className="px-2 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100"
-                              title="Excluir material"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
+                        <h3 className="font-semibold text-gray-900 mb-2">
+                          {material.name}
+                        </h3>
                         <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                           <span>
                             Qtd:{" "}
-                            <span className="font-medium text-gray-900">{material.quantity}</span>
+                            <span className="font-medium text-gray-900">
+                              {material.quantity}
+                            </span>
                           </span>
-                          {/* unit pode não existir no backend; mostrar se disponível */}
-                          {'unit' in material && (
-                            <span className="font-medium text-gray-900">{(material as any).unit}</span>
-                          )}
+                          <span className="font-medium text-gray-900">
+                            {material.unit}
+                          </span>
                         </div>
                         {material.observations && (
-                          <p className="text-xs sm:text-sm text-gray-600 mt-2">{material.observations}</p>
+                          <p className="text-xs sm:text-sm text-gray-600 mt-2">
+                            {material.observations}
+                          </p>
                         )}
                       </div>
                     ))}
@@ -269,15 +241,8 @@ export function ServiceDetail() {
       <MaterialModal
         serviceId={id!}
         isOpen={isMaterialModalOpen}
-        onClose={() => {
-          setIsMaterialModalOpen(false);
-          setEditingMaterial(null);
-        }}
-        onSuccess={() => {
-          loadData();
-          setEditingMaterial(null);
-        }}
-        editing={editingMaterial ?? undefined}
+        onClose={() => setIsMaterialModalOpen(false)}
+        onSuccess={loadData}
       />
     </MainLayout>
   );
@@ -295,37 +260,17 @@ function MaterialModal({
   isOpen,
   onClose,
   onSuccess,
-  editing,
-}: MaterialModalProps & { editing?: Material | undefined }) {
+}: MaterialModalProps) {
   const [formData, setFormData] = useState({
-    name: editing?.name ?? "",
-    quantity: editing?.quantity ?? 1,
-    unit: (editing as any)?.unit ?? "",
-    observations: editing?.observations ?? "",
+    name: "",
+    quantity: 1,
+    unit: "",
+    observations: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const commonUnits = ["un", "kg", "m", "L", "cx", "pc"];
-
-  useEffect(() => {
-    if (editing) {
-      setFormData({
-        name: editing.name,
-        quantity: editing.quantity,
-        unit: (editing as any).unit ?? "",
-        observations: editing.observations ?? "",
-      });
-    } else {
-      setFormData({
-        name: "",
-        quantity: 1,
-        unit: "",
-        observations: "",
-      });
-    }
-  }, [editing, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -333,19 +278,11 @@ function MaterialModal({
     setLoading(true);
 
     try {
-      if (editing) {
-        await serviceService.updateMaterial(serviceId, editing.id, {
-          name: formData.name,
-          quantity: formData.quantity,
-          observations: formData.observations,
-        });
-      } else {
-        await serviceService.addMaterial(serviceId, {
-          name: formData.name,
-          quantity: formData.quantity,
-          observations: formData.observations,
-        });
-      }
+      await serviceService.addMaterial(serviceId, {
+        name: formData.name,
+        quantity: formData.quantity,
+        observations: formData.observations,
+      });
 
       onSuccess();
       onClose();

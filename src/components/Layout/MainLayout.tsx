@@ -14,8 +14,8 @@ export function MainLayout({ children }: MainLayoutProps) {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-blue-900 text-white flex items-center justify-between px-4 z-40 shadow-lg">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="JL Omar (controle de produção)" className="w-8 h-8" />
-          <span className="font-bold text-sm">JL Omar (controle de produção)</span>
+          <img src="/logo.png" alt="TruckControl" className="w-8 h-8" />
+          <span className="font-bold text-sm">TruckControl</span>
         </div>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}

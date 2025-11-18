@@ -1,3 +1,52 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #1e3a8a; /* Azul escuro */
+    --color-accent: #fcd34d; /* Amarelo claro */
+    --color-primary-dark: #1e40af;
+    --color-accent-dark: #f59e0b;
+  }
+
+  body {
+    @apply bg-gray-50;
+    overflow-x: hidden;
+  }
+
+  button {
+    @apply transition-colors duration-200;
+  }
+
+  /* Melhorar scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded-lg hover:bg-gray-600;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-blue-900 hover:bg-blue-950 text-white;
+  }
+
+  .btn-accent {
+    @apply bg-yellow-400 hover:bg-yellow-500 text-gray-900;
+  }
+
+  /* Melhorias de mobile */
+  @media (max-width: 1024px) {
+    body {
+      font-size: 16px; /* Evitar zoom automático em inputs */
+    }
+  }
+}

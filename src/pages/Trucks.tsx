@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Truck, Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { Truck, Plus, Search } from 'lucide-react';
 import { MainLayout } from '../components/Layout/MainLayout';
 import { Header } from '../components/Layout/Header';
 import { Modal } from '../components/Modal';
@@ -12,7 +12,6 @@ export function Trucks() {
   const [filteredTrucks, setFilteredTrucks] = useState<TruckType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTruck, setEditingTruck] = useState<TruckType | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
@@ -33,22 +32,6 @@ export function Trucks() {
       setFilteredTrucks(trucks);
     }
   }, [searchTerm, trucks]);
-
-  const handleEdit = (truck: TruckType) => {
-    setEditingTruck(truck);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Deseja excluir este caminhão?')) return;
-    try {
-      await truckService.delete(id);
-      await loadTrucks();
-    } catch (err) {
-      console.error('Erro ao excluir caminhão:', err);
-      alert('Erro ao excluir caminhão');
-    }
-  };
 
   const loadTrucks = async () => {
     try {
@@ -121,28 +104,12 @@ export function Trucks() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex gap-2">
-                  <button
-                    onClick={() => navigate(`/trucks/${truck.id}`)}
-                    className="flex-1 px-4 py-2 border border-blue-900 text-blue-900 rounded-lg hover:bg-blue-50 transition-colors font-medium text-sm"
-                  >
-                    Ver Detalhes
-                  </button>
-                  <button
-                    onClick={() => handleEdit(truck)}
-                    className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                    title="Editar"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(truck.id)}
-                    className="px-3 py-2 border border-transparent bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                    title="Excluir"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                <button
+                  onClick={() => navigate(`/trucks/${truck.id}`)}
+                  className="w-full mt-4 px-4 py-2 border border-blue-900 text-blue-900 rounded-lg hover:bg-blue-50 transition-colors font-medium text-sm"
+                >
+                  Ver Detalhes
+                </button>
               </div>
             ))}
 
@@ -160,15 +127,8 @@ export function Trucks() {
 
       <TruckModal
         isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingTruck(null);
-        }}
-        onSuccess={() => {
-          loadTrucks();
-          setEditingTruck(null);
-        }}
-        editing={editingTruck ?? undefined}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={loadTrucks}
       />
     </MainLayout>
   );
@@ -178,37 +138,17 @@ interface TruckModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  editing?: TruckType;
 }
 
-function TruckModal({ isOpen, onClose, onSuccess, editing }: TruckModalProps) {
+function TruckModal({ isOpen, onClose, onSuccess }: TruckModalProps) {
   const [formData, setFormData] = useState({
-    brand: editing?.brand ?? '',
-    model: editing?.model ?? '',
-    year: editing?.year ?? new Date().getFullYear(),
-    observations: editing?.observations ?? '',
+    brand: '',
+    model: '',
+    year: new Date().getFullYear(),
+    observations: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // sync when modal opens with editing data
-  useEffect(() => {
-    if (editing) {
-      setFormData({
-        brand: editing.brand,
-        model: editing.model,
-        year: editing.year,
-        observations: editing.observations ?? '',
-      });
-    } else {
-      setFormData({
-        brand: '',
-        model: '',
-        year: new Date().getFullYear(),
-        observations: '',
-      });
-    }
-  }, [editing, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -216,11 +156,7 @@ function TruckModal({ isOpen, onClose, onSuccess, editing }: TruckModalProps) {
     setLoading(true);
 
     try {
-      if (editing) {
-        await truckService.update(editing.id, formData);
-      } else {
-        await truckService.create(formData);
-      }
+      await truckService.create(formData);
       onSuccess();
       onClose();
       setFormData({
@@ -313,7 +249,7 @@ function TruckModal({ isOpen, onClose, onSuccess, editing }: TruckModalProps) {
             disabled={loading}
             className="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-950 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? (editing ? 'Salvando...' : 'Cadastrando...') : (editing ? 'Salvar' : 'Cadastrar')}
+            {loading ? 'Cadastrando...' : 'Cadastrar'}
           </button>
         </div>
       </form>
