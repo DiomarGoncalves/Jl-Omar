@@ -235,7 +235,7 @@ interface ServiceModalProps {
 function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId, editing }: ServiceModalProps) {
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [formData, setFormData] = useState({
-    truckId: editing?.truckId ?? preSelectedTruckId || '',
+    truckId: (editing?.truckId ?? preSelectedTruckId) || '',
     equipment: editing?.equipment ?? '',
     serviceDate: editing?.serviceDate ?? new Date().toISOString().split('T')[0],
     of: editing?.of ?? '',
