@@ -28,13 +28,19 @@ export function Services() {
     let filtered = services;
 
     if (searchTerm) {
-      filtered = filtered.filter(
-        (service) =>
-          service.equipment.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          service.of.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          service.truck?.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          service.truck?.model.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const term = searchTerm.toLowerCase();
+
+      filtered = filtered.filter((service) => {
+        const brand = service.truck?.brand ?? '';
+        const model = service.truck?.model ?? '';
+
+        return (
+          service.equipment.toLowerCase().includes(term) ||
+          service.of.toLowerCase().includes(term) ||
+          brand.toLowerCase().includes(term) ||
+          model.toLowerCase().includes(term)
+        );
+      });
     }
 
     if (statusFilter !== 'TODOS') {
@@ -46,9 +52,27 @@ export function Services() {
 
   const loadServices = async () => {
     try {
-      const data = await serviceService.getAll();
-      setServices(data);
-      setFilteredServices(data);
+      setLoading(true);
+
+      // 1) Carrega serviços (já mapeados para camelCase pelo serviceService)
+      const [servicesData, trucksData] = await Promise.all([
+        serviceService.getAll(),
+        truckService.getAll(),
+      ]);
+
+      // 2) Mapeia caminhões por id
+      const truckMap = new Map<string, Truck>(
+        trucksData.map((t) => [t.id, t])
+      );
+
+      // 3) "Enriquece" cada serviço com o caminhão correspondente
+      const enriched = servicesData.map<Service>((s) => ({
+        ...s,
+        truck: truckMap.get(s.truckId),
+      }));
+
+      setServices(enriched);
+      setFilteredServices(enriched);
     } catch (error) {
       console.error('Erro ao carregar serviços:', error);
     } finally {
@@ -72,16 +96,14 @@ export function Services() {
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
-  };
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
-  };
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString('pt-BR');
 
   const truckIdFromUrl = searchParams.get('truck');
 
@@ -115,7 +137,9 @@ export function Services() {
           </div>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as ServiceStatus | 'TODOS')}
+            onChange={(e) =>
+              setStatusFilter(e.target.value as ServiceStatus | 'TODOS')
+            }
             className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
           >
             <option value="TODOS">Todos os Status</option>
@@ -140,7 +164,9 @@ export function Services() {
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{service.equipment}</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                      {service.equipment}
+                    </h3>
                     <StatusBadge status={service.status} size="sm" />
                   </div>
                   <div className="flex gap-2 items-start ml-3">
@@ -171,12 +197,16 @@ export function Services() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Caminhão:</span>
                     <span className="font-medium text-gray-900">
-                      {service.truck?.brand} {service.truck?.model}
+                      {service.truck
+                        ? `${service.truck.brand} ${service.truck.model}`
+                        : '-'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">OF:</span>
-                    <span className="font-medium text-gray-900">{service.of}</span>
+                    <span className="font-medium text-gray-900">
+                      {service.of}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Data:</span>
@@ -186,7 +216,9 @@ export function Services() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Entre-eixo:</span>
-                    <span className="font-medium text-gray-900">{service.meter}m</span>
+                    <span className="font-medium text-gray-900">
+                      {service.meter}m
+                    </span>
                   </div>
                 </div>
 
@@ -224,6 +256,8 @@ export function Services() {
   );
 }
 
+// ===== Modal de criação/edição de serviço (sem mudanças na parte de caminhão) =====
+
 interface ServiceModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -232,7 +266,13 @@ interface ServiceModalProps {
   editing?: Service;
 }
 
-function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId, editing }: ServiceModalProps) {
+function ServiceModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  preSelectedTruckId,
+  editing,
+}: ServiceModalProps) {
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [formData, setFormData] = useState({
     truckId: (editing?.truckId ?? preSelectedTruckId) || '',
@@ -241,8 +281,9 @@ function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId, editing 
     of: editing?.of ?? '',
     meter: editing?.meter ?? 0,
     value: editing?.value ?? 0,
-    status: editing?.status ?? 'PENDENTE' as ServiceStatus,
+    status: (editing?.status ?? 'PENDENTE') as ServiceStatus,
     observations: editing?.observations ?? '',
+    chassis: editing?.chassis ?? '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -264,6 +305,7 @@ function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId, editing 
         value: editing.value,
         status: editing.status,
         observations: editing.observations ?? '',
+        chassis: editing.chassis ?? '',
       });
     } else if (preSelectedTruckId) {
       setFormData((prev) => ({ ...prev, truckId: preSelectedTruckId }));
@@ -301,9 +343,12 @@ function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId, editing 
         value: 0,
         status: 'PENDENTE',
         observations: '',
+        chassis: '',
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao cadastrar serviço');
+      setError(
+        err instanceof Error ? err.message : 'Erro ao cadastrar serviço'
+      );
     } finally {
       setLoading(false);
     }
@@ -324,7 +369,9 @@ function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId, editing 
           </label>
           <select
             value={formData.truckId}
-            onChange={(e) => setFormData({ ...formData, truckId: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, truckId: e.target.value })
+            }
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             required
           >
@@ -336,6 +383,7 @@ function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId, editing 
             ))}
           </select>
         </div>
+
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -376,6 +424,20 @@ function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId, editing 
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             required
           />
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Chassi <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={formData.chassis}
+            onChange={(e) => setFormData({ ...formData, chassis: e.target.value })}
+            placeholder="Ex: 9BWZZZ377VT000001"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            required
+          />
+        </div>
         </div>
 
         <div>

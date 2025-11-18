@@ -16,20 +16,19 @@ export interface Truck {
   pendingCount?: number;
 }
 
-export type ServiceStatus = 'PENDENTE' | 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO';
-
 export interface Service {
   id: string;
-  truckId: string;
-  truck?: Truck;
+  truck_id: string;
   equipment: string;
-  serviceDate: string;
-  of: string;
+  service_date: string;
   meter: number;
   value: number;
-  status: ServiceStatus;
-  observations?: string;
+  of: string;
+  status: "PENDENTE" | "EM_ANDAMENTO" | "CONCLUIDO" | "CANCELADO";
+  observations?: string | null;
+  chassis?: string | null;
 }
+
 
 export interface Material {
   id: string;

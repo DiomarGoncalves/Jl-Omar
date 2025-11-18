@@ -7,6 +7,8 @@ import { Modal } from "../components/Modal";
 import { serviceService } from "../services/serviceService";
 import { Service, Material } from "../types";
 import { MEASUREMENT_LABEL } from "../config/api";
+import { truckService } from "../services/truckService";
+import { Truck as TruckType } from "../types";
 
 export function ServiceDetail() {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +18,8 @@ export function ServiceDetail() {
   const [loading, setLoading] = useState(true);
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
 
+  const [truck, setTruck] = useState<TruckType | null>(null);
+
   useEffect(() => {
     if (id) {
       loadData();
@@ -23,21 +27,30 @@ export function ServiceDetail() {
   }, [id]);
 
   const loadData = async () => {
-    if (!id) return;
+  if (!id) return;
 
-    try {
-      const [serviceData, materialsData] = await Promise.all([
-        serviceService.getById(id),
-        serviceService.getMaterials(id),
-      ]);
-      setService(serviceData);
-      setMaterials(materialsData);
-    } catch (error) {
-      console.error("Erro ao carregar dados:", error);
-    } finally {
-      setLoading(false);
+  try {
+    const [serviceData, materialsData] = await Promise.all([
+      serviceService.getById(id),
+      serviceService.getMaterials(id),
+    ]);
+
+    setService(serviceData);
+    setMaterials(materialsData);
+
+    // se o serviço tiver truckId, busca o caminhão
+    if (serviceData.truckId) {
+      const truckData = await truckService.getById(serviceData.truckId);
+      setTruck(truckData);
+    } else {
+      setTruck(null);
     }
-  };
+  } catch (error) {
+    console.error("Erro ao carregar dados:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -102,15 +115,27 @@ export function ServiceDetail() {
       <div className="p-4 sm:p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-            <p className="text-xs sm:text-sm text-gray-600 mb-1">Caminhão</p>
-            <p className="text-base sm:text-lg font-bold text-gray-900">
-              {service.truck?.brand} {service.truck?.model}
-            </p>
-            <p className="text-xs sm:text-sm text-gray-600">Ano {service.truck?.year}</p>
-          </div>
+  <p className="text-xs sm:text-sm text-gray-600 mb-1">Caminhão</p>
+  <p className="text-base sm:text-lg font-bold text-gray-900">
+    {truck ? `${truck.brand} ${truck.model}` : "-"}
+  </p>
+  <p className="text-xs sm:text-sm text-gray-600">
+    Ano {truck?.year ?? "-"}
+  </p>
+</div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-            <p className="text-xs sm:text-sm text-gray-600 mb-1">Data do Serviço</p>
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">Chassi</p>
+            <p className="text-base sm:text-lg font-bold text-gray-900">
+              {service.chassis ?? "-"}
+            </p>
+          </div>
+
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">
+              Data do Serviço
+            </p>
             <p className="text-base sm:text-lg font-bold text-gray-900">
               {formatDate(service.serviceDate)}
             </p>
@@ -118,12 +143,16 @@ export function ServiceDetail() {
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <p className="text-xs sm:text-sm text-gray-600 mb-1">Metragem</p>
-            <p className="text-base sm:text-lg font-bold text-gray-900">{service.meter}</p>
+            <p className="text-base sm:text-lg font-bold text-gray-900">
+              {service.meter}
+            </p>
             <p className="text-xs text-gray-600">{MEASUREMENT_LABEL}</p>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-            <p className="text-xs sm:text-sm text-gray-600 mb-1">Valor do Serviço</p>
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">
+              Valor do Serviço
+            </p>
             <p className="text-base sm:text-lg font-bold text-green-600">
               {formatCurrency(service.value)}
             </p>
@@ -194,7 +223,9 @@ export function ServiceDetail() {
                 <h2 className="text-lg font-bold text-gray-900 mb-4">
                   Observações
                 </h2>
-                <p className="text-gray-700 text-sm sm:text-base break-words">{service.observations}</p>
+                <p className="text-gray-700 text-sm sm:text-base break-words">
+                  {service.observations}
+                </p>
               </div>
             )}
           </div>
@@ -224,13 +255,6 @@ export function ServiceDetail() {
                 >
                   <Plus className="w-4 h-4" />
                   <span className="font-medium">Adicionar à Medição</span>
-                </button>
-                <button
-                  onClick={() => navigate(`/trucks/${service.truckId}`)}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 sm:py-3 bg-blue-900 text-white rounded-lg hover:bg-blue-950 transition-colors text-xs sm:text-sm"
-                >
-                  <TruckIcon className="w-4 h-4" />
-                  <span className="font-medium">Ver Caminhão</span>
                 </button>
               </div>
             </div>

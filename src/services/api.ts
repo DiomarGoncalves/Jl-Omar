@@ -39,6 +39,10 @@ class ApiService {
         const error = await response.json().catch(() => ({ message: 'Erro ao processar requisição' }));
         throw new Error(error.message || 'Erro ao processar requisição');
       }
+      if (response.status === 204) {
+        return undefined as T;
+      }
+
 
       return await response.json();
     } catch (error) {
