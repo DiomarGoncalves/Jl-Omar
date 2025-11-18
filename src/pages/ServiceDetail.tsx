@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, FileText, Truck as TruckIcon } from 'lucide-react';
-import { MainLayout } from '../components/Layout/MainLayout';
-import { StatusBadge } from '../components/StatusBadge';
-import { Modal } from '../components/Modal';
-import { serviceService } from '../services/serviceService';
-import { Service, Material } from '../types';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, Plus, FileText, Truck as TruckIcon } from "lucide-react";
+import { MainLayout } from "../components/Layout/MainLayout";
+import { StatusBadge } from "../components/StatusBadge";
+import { Modal } from "../components/Modal";
+import { serviceService } from "../services/serviceService";
+import { Service, Material } from "../types";
 
 export function ServiceDetail() {
   const { id } = useParams<{ id: string }>();
@@ -32,21 +32,21 @@ export function ServiceDetail() {
       setService(serviceData);
       setMaterials(materialsData);
     } catch (error) {
-      console.error('Erro ao carregar dados:', error);
+      console.error("Erro ao carregar dados:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(value);
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
+    return new Date(date).toLocaleDateString("pt-BR");
   };
 
   if (loading) {
@@ -73,7 +73,7 @@ export function ServiceDetail() {
     <MainLayout>
       <div className="bg-white border-b border-gray-200 px-8 py-6">
         <button
-          onClick={() => navigate('/services')}
+          onClick={() => navigate("/services")}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -81,7 +81,9 @@ export function ServiceDetail() {
         </button>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{service.equipment}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {service.equipment}
+            </h1>
             <p className="text-sm text-gray-600 mt-1">OF: {service.of}</p>
           </div>
           <StatusBadge status={service.status} size="lg" />
@@ -100,7 +102,9 @@ export function ServiceDetail() {
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <p className="text-sm text-gray-600 mb-1">Data do Serviço</p>
-            <p className="text-lg font-bold text-gray-900">{formatDate(service.serviceDate)}</p>
+            <p className="text-lg font-bold text-gray-900">
+              {formatDate(service.serviceDate)}
+            </p>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -110,7 +114,9 @@ export function ServiceDetail() {
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <p className="text-sm text-gray-600 mb-1">Valor do Serviço</p>
-            <p className="text-lg font-bold text-green-600">{formatCurrency(service.value)}</p>
+            <p className="text-lg font-bold text-green-600">
+              {formatCurrency(service.value)}
+            </p>
           </div>
         </div>
 
@@ -119,7 +125,9 @@ export function ServiceDetail() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Materiais Utilizados</h2>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    Materiais Utilizados
+                  </h2>
                   <p className="text-sm text-gray-600">
                     Lista de materiais aplicados neste serviço
                   </p>
@@ -141,28 +149,41 @@ export function ServiceDetail() {
                         key={material.id}
                         className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
                       >
-                        <h3 className="font-semibold text-gray-900 mb-2">{material.name}</h3>
+                        <h3 className="font-semibold text-gray-900 mb-2">
+                          {material.name}
+                        </h3>
                         <div className="flex items-center gap-4 text-sm text-gray-600">
                           <span>
-                            Qtd: <span className="font-medium text-gray-900">{material.quantity}</span>
+                            Qtd:{" "}
+                            <span className="font-medium text-gray-900">
+                              {material.quantity}
+                            </span>
                           </span>
-                          <span className="font-medium text-gray-900">{material.unit}</span>
+                          <span className="font-medium text-gray-900">
+                            {material.unit}
+                          </span>
                         </div>
                         {material.observations && (
-                          <p className="text-sm text-gray-600 mt-2">{material.observations}</p>
+                          <p className="text-sm text-gray-600 mt-2">
+                            {material.observations}
+                          </p>
                         )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-8">Nenhum material adicionado</p>
+                  <p className="text-gray-500 text-center py-8">
+                    Nenhum material adicionado
+                  </p>
                 )}
               </div>
             </div>
 
             {service.observations && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Observações</h2>
+                <h2 className="text-lg font-bold text-gray-900 mb-4">
+                  Observações
+                </h2>
                 <p className="text-gray-700">{service.observations}</p>
               </div>
             )}
@@ -170,17 +191,27 @@ export function ServiceDetail() {
 
           <div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Ações Rápidas</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                Ações Rápidas
+              </h2>
               <div className="space-y-3">
                 <button
-                  onClick={() => alert('Funcionalidade de gerar requisição em desenvolvimento')}
+                  onClick={() =>
+                    alert(
+                      "Funcionalidade de gerar requisição em desenvolvimento"
+                    )
+                  }
                   className="w-full flex items-center gap-3 px-4 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
                 >
                   <FileText className="w-5 h-5" />
-                  <span className="font-medium">Gerar Requisição de Materiais</span>
+                  <span className="font-medium">
+                    Gerar Requisição de Materiais
+                  </span>
                 </button>
                 <button
-                  onClick={() => navigate('/measurements?service=' + service.id)}
+                  onClick={() =>
+                    navigate("/measurements?service=" + service.id)
+                  }
                   className="w-full flex items-center gap-3 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
                   <Plus className="w-5 h-5" />
@@ -216,35 +247,47 @@ interface MaterialModalProps {
   onSuccess: () => void;
 }
 
-function MaterialModal({ serviceId, isOpen, onClose, onSuccess }: MaterialModalProps) {
+function MaterialModal({
+  serviceId,
+  isOpen,
+  onClose,
+  onSuccess,
+}: MaterialModalProps) {
   const [formData, setFormData] = useState({
-    name: '',
+    name: "",
     quantity: 1,
-    unit: '',
-    observations: '',
+    unit: "",
+    observations: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const commonUnits = ['un', 'kg', 'm', 'L', 'cx', 'pc'];
+  const commonUnits = ["un", "kg", "m", "L", "cx", "pc"];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      await serviceService.addMaterial(serviceId, formData);
+      await serviceService.addMaterial(serviceId, {
+        name: formData.name,
+        quantity: formData.quantity,
+        observations: formData.observations,
+      });
+
       onSuccess();
       onClose();
       setFormData({
-        name: '',
+        name: "",
         quantity: 1,
-        unit: '',
-        observations: '',
+        unit: "",
+        observations: "",
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao adicionar material');
+      setError(
+        err instanceof Error ? err.message : "Erro ao adicionar material"
+      );
     } finally {
       setLoading(false);
     }
@@ -281,7 +324,9 @@ function MaterialModal({ serviceId, isOpen, onClose, onSuccess }: MaterialModalP
             type="number"
             step="0.01"
             value={formData.quantity}
-            onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) })}
+            onChange={(e) =>
+              setFormData({ ...formData, quantity: parseFloat(e.target.value) })
+            }
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             required
           />
@@ -294,7 +339,9 @@ function MaterialModal({ serviceId, isOpen, onClose, onSuccess }: MaterialModalP
           <div className="flex gap-2">
             <select
               value={formData.unit}
-              onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, unit: e.target.value })
+              }
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               required
             >
@@ -306,11 +353,13 @@ function MaterialModal({ serviceId, isOpen, onClose, onSuccess }: MaterialModalP
               ))}
               <option value="outro">Outro</option>
             </select>
-            {formData.unit === 'outro' && (
+            {formData.unit === "outro" && (
               <input
                 type="text"
                 placeholder="Digite a unidade"
-                onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, unit: e.target.value })
+                }
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 required
               />
@@ -319,10 +368,14 @@ function MaterialModal({ serviceId, isOpen, onClose, onSuccess }: MaterialModalP
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Observações
+          </label>
           <textarea
             value={formData.observations}
-            onChange={(e) => setFormData({ ...formData, observations: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, observations: e.target.value })
+            }
             placeholder="Informações adicionais"
             rows={3}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
@@ -342,7 +395,7 @@ function MaterialModal({ serviceId, isOpen, onClose, onSuccess }: MaterialModalP
             disabled={loading}
             className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Adicionando...' : 'Adicionar'}
+            {loading ? "Adicionando..." : "Adicionar"}
           </button>
         </div>
       </form>

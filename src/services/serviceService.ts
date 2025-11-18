@@ -30,16 +30,15 @@ export const serviceService = {
     return api.get<Material[]>(`/services/${serviceId}/materials`);
   },
 
-  async addMaterial(
+
+   async addMaterial(
     serviceId: string,
-    data: Omit<Material, "id" | "serviceId">
+    data: { name: string; quantity: number; observations?: string }
   ): Promise<Material> {
-    // 🔁 Aqui fazemos o "map" pro formato que a API espera
     const payload = {
       name: data.name,
-      quantity: data.quantity,
-      // se no tipo Material for unitPrice (camelCase), mapeamos pra unit_price
-      unit_price: (data as any).unitPrice ?? (data as any).unit_price,
+      quantity: Number(data.quantity),
+      observations: data.observations ?? null,
     };
 
     return api.post<Material>(`/services/${serviceId}/materials`, payload);
