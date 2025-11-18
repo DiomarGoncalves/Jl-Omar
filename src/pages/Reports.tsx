@@ -81,11 +81,21 @@ export function Reports() {
   };
 
   const totalServices = filteredServices.length;
-  const totalValue = filteredServices.reduce((sum, service) => sum + service.value, 0);
-  const totalMeters = filteredServices.reduce((sum, service) => sum + service.meter, 0);
+  const totalValue = filteredServices.reduce(
+    (sum, service) => sum + Number(service.value ?? 0),
+    0
+  );
+  const totalMeters = filteredServices.reduce(
+    (sum, service) => sum + Number(service.meter ?? 0),
+    0
+  );
+
+  const truckMap = new Map(trucks.map((t) => [t.id, t]));
 
   const servicesByTruck = filteredServices.reduce((acc, service) => {
-    const truckKey = `${service.truck?.brand} ${service.truck?.model}`;
+    const truck = truckMap.get(service.truckId);
+    const truckKey = truck ? `${truck.brand} ${truck.model}` : 'Caminhão não encontrado';
+
     if (!acc[truckKey]) {
       acc[truckKey] = {
         count: 0,
@@ -93,15 +103,27 @@ export function Reports() {
         meters: 0,
       };
     }
-    acc[truckKey].count++;
-    acc[truckKey].value += service.value;
-    acc[truckKey].meters += service.meter;
+
+    acc[truckKey].count += 1;
+    acc[truckKey].value += Number(service.value ?? 0);
+    acc[truckKey].meters += Number(service.meter ?? 0);
+
     return acc;
   }, {} as Record<string, { count: number; value: number; meters: number }>);
 
   const handleExport = () => {
     alert('Funcionalidade de exportação em desenvolvimento');
   };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="p-8">
+          <p>Carregando relatórios...</p>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -120,12 +142,14 @@ export function Reports() {
       />
 
       <div className="p-8">
+        {/* Filtros */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <FileText className="w-5 h-5" />
             Filtros do Relatório
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Data inicial */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Data Inicial</label>
               <input
@@ -136,6 +160,7 @@ export function Reports() {
               />
             </div>
 
+            {/* Data final */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Data Final</label>
               <input
@@ -146,6 +171,7 @@ export function Reports() {
               />
             </div>
 
+            {/* Caminhão */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Caminhão</label>
               <select
@@ -162,11 +188,14 @@ export function Reports() {
               </select>
             </div>
 
+            {/* Status */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
               <select
                 value={filters.status}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value as ServiceStatus | 'TODOS' })}
+                onChange={(e) =>
+                  setFilters({ ...filters, status: e.target.value as ServiceStatus | 'TODOS' })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               >
                 <option value="TODOS">Todos os Status</option>
@@ -188,6 +217,7 @@ export function Reports() {
           </div>
         </div>
 
+        {/* Cards de resumo */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <p className="text-sm text-gray-600 mb-1">Total de Serviços</p>
@@ -205,7 +235,9 @@ export function Reports() {
           </div>
         </div>
 
+        {/* Grid: resumo por caminhão + serviços detalhados */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Resumo por caminhão */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <h3 className="font-semibold text-gray-900">Resumo por Caminhão</h3>
@@ -222,11 +254,15 @@ export function Reports() {
                       </div>
                       <div>
                         <p className="text-gray-600">Valor</p>
-                        <p className="font-medium text-green-600">{formatCurrency(data.value)}</p>
+                        <p className="font-medium text-green-600">
+                          {formatCurrency(data.value)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-gray-600">Metragem</p>
-                        <p className="font-medium text-blue-600">{data.meters.toFixed(2)}m</p>
+                        <p className="font-medium text-blue-600">
+                          {data.meters.toFixed(2)}m
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -239,30 +275,37 @@ export function Reports() {
             </div>
           </div>
 
+          {/* Serviços detalhados */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <h3 className="font-semibold text-gray-900">Serviços Detalhados</h3>
             </div>
             <div className="p-6 max-h-[600px] overflow-y-auto">
               <div className="space-y-3">
-                {filteredServices.map((service) => (
-                  <div key={service.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{service.equipment}</h4>
-                        <p className="text-sm text-gray-600">
-                          {service.truck?.brand} {service.truck?.model}
+                {filteredServices.map((service) => {
+                  const truck = truckMap.get(service.truckId);
+
+                  return (
+                    <div key={service.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h4 className="font-semibold text-gray-900">{service.equipment}</h4>
+                          <p className="text-sm text-gray-600">
+                            {truck ? `${truck.brand} ${truck.model}` : 'Caminhão não encontrado'}
+                          </p>
+                        </div>
+                        <p className="font-semibold text-green-600">
+                          {formatCurrency(Number(service.value ?? 0))}
                         </p>
                       </div>
-                      <p className="font-semibold text-green-600">{formatCurrency(service.value)}</p>
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span>OF: {service.of}</span>
+                        <span>{formatDate(service.serviceDate)}</span>
+                        <span>{Number(service.meter ?? 0)}m</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span>OF: {service.of}</span>
-                      <span>{formatDate(service.serviceDate)}</span>
-                      <span>{service.meter}m</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {filteredServices.length === 0 && (
                   <p className="text-gray-500 text-center py-8">Nenhum serviço encontrado</p>
