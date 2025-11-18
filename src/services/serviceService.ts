@@ -30,8 +30,7 @@ export const serviceService = {
     return api.get<Material[]>(`/services/${serviceId}/materials`);
   },
 
-
-   async addMaterial(
+  async addMaterial(
     serviceId: string,
     data: { name: string; quantity: number; observations?: string }
   ): Promise<Material> {
@@ -42,5 +41,17 @@ export const serviceService = {
     };
 
     return api.post<Material>(`/services/${serviceId}/materials`, payload);
+  },
+
+  async updateMaterial(
+    serviceId: string,
+    materialId: string,
+    data: Partial<{ name: string; quantity: number; observations?: string }>
+  ): Promise<Material> {
+    return api.put<Material>(`/services/${serviceId}/materials/${materialId}`, data);
+  },
+
+  async deleteMaterial(serviceId: string, materialId: string): Promise<void> {
+    return api.delete<void>(`/services/${serviceId}/materials/${materialId}`);
   },
 };
