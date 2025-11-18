@@ -21,4 +21,12 @@ export const measurementService = {
   async create(data: Omit<Measurement, 'id'>): Promise<Measurement> {
     return api.post<Measurement>('/measurements', data);
   },
+
+  async update(id: string, data: Partial<Measurement>): Promise<Measurement> {
+    return api.put<Measurement>(`/measurements/${id}`, data);
+  },
+
+  async delete(id: string): Promise<void> {
+    return api.delete<void>(`/measurements/${id}`);
+  },
 };

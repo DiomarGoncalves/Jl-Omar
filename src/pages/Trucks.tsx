@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Truck, Plus, Search } from 'lucide-react';
+import { Truck, Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import { MainLayout } from '../components/Layout/MainLayout';
 import { Header } from '../components/Layout/Header';
 import { Modal } from '../components/Modal';
@@ -12,6 +12,7 @@ export function Trucks() {
   const [filteredTrucks, setFilteredTrucks] = useState<TruckType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTruck, setEditingTruck] = useState<TruckType | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
@@ -33,6 +34,22 @@ export function Trucks() {
     }
   }, [searchTerm, trucks]);
 
+  const handleEdit = (truck: TruckType) => {
+    setEditingTruck(truck);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Deseja excluir este caminhão?')) return;
+    try {
+      await truckService.delete(id);
+      await loadTrucks();
+    } catch (err) {
+      console.error('Erro ao excluir caminhão:', err);
+      alert('Erro ao excluir caminhão');
+    }
+  };
+
   const loadTrucks = async () => {
     try {
       const data = await truckService.getAll();
@@ -53,15 +70,15 @@ export function Trucks() {
         actions={
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-950 transition-colors font-medium"
           >
             <Plus className="w-5 h-5" />
-            <span className="font-medium">Novo Caminhão</span>
+            <span className="hidden sm:inline">Novo Caminhão</span>
           </button>
         }
       />
 
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         <div className="mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -70,7 +87,7 @@ export function Trucks() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Pesquisar por marca, modelo ou ano..."
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none"
             />
           </div>
           <p className="text-sm text-gray-600 mt-2">
@@ -80,21 +97,21 @@ export function Trucks() {
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredTrucks.map((truck) => (
               <div
                 key={truck.id}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start gap-4">
-                  <div className="bg-blue-100 p-3 rounded-lg">
-                    <Truck className="w-8 h-8 text-blue-600" />
+                  <div className="bg-yellow-100 p-3 rounded-lg flex-shrink-0">
+                    <Truck className="w-6 h-6 sm:w-8 sm:h-8 text-blue-900" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1 truncate">
                       {truck.brand} {truck.model}
                     </h3>
                     <p className="text-sm text-gray-600 mb-2">Ano {truck.year}</p>
@@ -104,12 +121,28 @@ export function Trucks() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => navigate(`/trucks/${truck.id}`)}
-                  className="w-full mt-4 px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
-                >
-                  Ver Detalhes
-                </button>
+                <div className="mt-4 flex gap-2">
+                  <button
+                    onClick={() => navigate(`/trucks/${truck.id}`)}
+                    className="flex-1 px-4 py-2 border border-blue-900 text-blue-900 rounded-lg hover:bg-blue-50 transition-colors font-medium text-sm"
+                  >
+                    Ver Detalhes
+                  </button>
+                  <button
+                    onClick={() => handleEdit(truck)}
+                    className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    title="Editar"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(truck.id)}
+                    className="px-3 py-2 border border-transparent bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                    title="Excluir"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
 
@@ -127,8 +160,15 @@ export function Trucks() {
 
       <TruckModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={loadTrucks}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingTruck(null);
+        }}
+        onSuccess={() => {
+          loadTrucks();
+          setEditingTruck(null);
+        }}
+        editing={editingTruck ?? undefined}
       />
     </MainLayout>
   );
@@ -138,17 +178,37 @@ interface TruckModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  editing?: TruckType;
 }
 
-function TruckModal({ isOpen, onClose, onSuccess }: TruckModalProps) {
+function TruckModal({ isOpen, onClose, onSuccess, editing }: TruckModalProps) {
   const [formData, setFormData] = useState({
-    brand: '',
-    model: '',
-    year: new Date().getFullYear(),
-    observations: '',
+    brand: editing?.brand ?? '',
+    model: editing?.model ?? '',
+    year: editing?.year ?? new Date().getFullYear(),
+    observations: editing?.observations ?? '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // sync when modal opens with editing data
+  useEffect(() => {
+    if (editing) {
+      setFormData({
+        brand: editing.brand,
+        model: editing.model,
+        year: editing.year,
+        observations: editing.observations ?? '',
+      });
+    } else {
+      setFormData({
+        brand: '',
+        model: '',
+        year: new Date().getFullYear(),
+        observations: '',
+      });
+    }
+  }, [editing, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,7 +216,11 @@ function TruckModal({ isOpen, onClose, onSuccess }: TruckModalProps) {
     setLoading(true);
 
     try {
-      await truckService.create(formData);
+      if (editing) {
+        await truckService.update(editing.id, formData);
+      } else {
+        await truckService.create(formData);
+      }
       onSuccess();
       onClose();
       setFormData({
@@ -190,7 +254,7 @@ function TruckModal({ isOpen, onClose, onSuccess }: TruckModalProps) {
             value={formData.brand}
             onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
             placeholder="Ex: Scania, Volvo, Mercedes"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none"
             required
           />
         </div>
@@ -204,7 +268,7 @@ function TruckModal({ isOpen, onClose, onSuccess }: TruckModalProps) {
             value={formData.model}
             onChange={(e) => setFormData({ ...formData, model: e.target.value })}
             placeholder="Ex: R450, FH 540"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none"
             required
           />
         </div>
@@ -220,7 +284,7 @@ function TruckModal({ isOpen, onClose, onSuccess }: TruckModalProps) {
             placeholder="2025"
             min="1900"
             max={new Date().getFullYear() + 1}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none"
             required
           />
         </div>
@@ -232,7 +296,7 @@ function TruckModal({ isOpen, onClose, onSuccess }: TruckModalProps) {
             onChange={(e) => setFormData({ ...formData, observations: e.target.value })}
             placeholder="Informações adicionais sobre o caminhão..."
             rows={3}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none resize-none"
           />
         </div>
 
@@ -247,9 +311,9 @@ function TruckModal({ isOpen, onClose, onSuccess }: TruckModalProps) {
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-950 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Cadastrando...' : 'Cadastrar'}
+            {loading ? (editing ? 'Salvando...' : 'Cadastrando...') : (editing ? 'Salvar' : 'Cadastrar')}
           </button>
         </div>
       </form>

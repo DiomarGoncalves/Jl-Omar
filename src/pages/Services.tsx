@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import { MainLayout } from '../components/Layout/MainLayout';
 import { Header } from '../components/Layout/Header';
 import { Modal } from '../components/Modal';
@@ -14,6 +14,7 @@ export function Services() {
   const [filteredServices, setFilteredServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<ServiceStatus | 'TODOS'>('TODOS');
   const navigate = useNavigate();
@@ -52,6 +53,22 @@ export function Services() {
       console.error('Erro ao carregar serviços:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEdit = (s: Service) => {
+    setEditingService(s);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Deseja excluir este serviço?')) return;
+    try {
+      await serviceService.delete(id);
+      await loadServices();
+    } catch (err) {
+      console.error('Erro ao excluir serviço:', err);
+      alert('Erro ao excluir serviço');
     }
   };
 
@@ -126,6 +143,28 @@ export function Services() {
                     <h3 className="text-lg font-bold text-gray-900 mb-2">{service.equipment}</h3>
                     <StatusBadge status={service.status} size="sm" />
                   </div>
+                  <div className="flex gap-2 items-start ml-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(service);
+                      }}
+                      className="px-2 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                      title="Editar"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        await handleDelete(service.id);
+                      }}
+                      className="px-2 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100"
+                      title="Excluir"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-2 text-sm mb-4">
@@ -173,9 +212,13 @@ export function Services() {
 
       <ServiceModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingService(null);
+        }}
         onSuccess={loadServices}
         preSelectedTruckId={truckIdFromUrl || undefined}
+        editing={editingService ?? undefined}
       />
     </MainLayout>
   );
@@ -186,19 +229,20 @@ interface ServiceModalProps {
   onClose: () => void;
   onSuccess: () => void;
   preSelectedTruckId?: string;
+  editing?: Service;
 }
 
-function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId }: ServiceModalProps) {
+function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId, editing }: ServiceModalProps) {
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [formData, setFormData] = useState({
-    truckId: preSelectedTruckId || '',
-    equipment: '',
-    serviceDate: new Date().toISOString().split('T')[0],
-    of: '',
-    meter: 0,
-    value: 0,
-    status: 'PENDENTE' as ServiceStatus,
-    observations: '',
+    truckId: editing?.truckId ?? preSelectedTruckId || '',
+    equipment: editing?.equipment ?? '',
+    serviceDate: editing?.serviceDate ?? new Date().toISOString().split('T')[0],
+    of: editing?.of ?? '',
+    meter: editing?.meter ?? 0,
+    value: editing?.value ?? 0,
+    status: editing?.status ?? 'PENDENTE' as ServiceStatus,
+    observations: editing?.observations ?? '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -210,10 +254,21 @@ function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId }: Servic
   }, [isOpen]);
 
   useEffect(() => {
-    if (preSelectedTruckId) {
+    if (editing) {
+      setFormData({
+        truckId: editing.truckId,
+        equipment: editing.equipment,
+        serviceDate: editing.serviceDate,
+        of: editing.of,
+        meter: editing.meter,
+        value: editing.value,
+        status: editing.status,
+        observations: editing.observations ?? '',
+      });
+    } else if (preSelectedTruckId) {
       setFormData((prev) => ({ ...prev, truckId: preSelectedTruckId }));
     }
-  }, [preSelectedTruckId]);
+  }, [editing, preSelectedTruckId]);
 
   const loadTrucks = async () => {
     try {
@@ -230,7 +285,11 @@ function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId }: Servic
     setLoading(true);
 
     try {
-      await serviceService.create(formData);
+      if (editing) {
+        await serviceService.update(editing.id, formData);
+      } else {
+        await serviceService.create(formData);
+      }
       onSuccess();
       onClose();
       setFormData({
@@ -388,7 +447,7 @@ function ServiceModal({ isOpen, onClose, onSuccess, preSelectedTruckId }: Servic
             disabled={loading}
             className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Cadastrando...' : 'Cadastrar'}
+            {loading ? (editing ? 'Salvando...' : 'Cadastrando...') : (editing ? 'Salvar' : 'Cadastrar')}
           </button>
         </div>
       </form>

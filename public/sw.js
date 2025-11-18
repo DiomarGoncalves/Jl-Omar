@@ -1,4 +1,4 @@
-const CACHE_NAME = 'truckcontrol-v1';
+const CACHE_NAME = 'JL Omar (controle de produção)-v1';
 const urlsToCache = [
   '/',
   '/index.html',
